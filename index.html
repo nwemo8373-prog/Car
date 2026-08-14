@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>NEGM CITY — Ultimate Drive</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#05070a;
+  font-family:Arial,"Tahoma",sans-serif;
+  touch-action:none;
+}
+#game{
+  position:fixed;
+  inset:0;
+}
+canvas{
+  display:block;
+}
+button{
+  font-family:inherit;
+  border:0;
+  outline:0;
+  cursor:pointer;
+}
+#loading{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 50% 30%,#312500,#0a0b0e 45%,#020305);
+  color:#fff;
+  transition:.5s;
+}
+.loadBox{
+  width:min(440px,88vw);
+  text-align:center;
+}
+.logo{
+  font-size:42px;
+  font-weight:1000;
+  letter-spacing:5px;
+  color:#ffd21a;
+  text-shadow:0 0 30px #ff9d00;
+}
+.logo small{
+  display:block;
+  color:#aaa;
+  font-size:11px;
+  letter-spacing:7px;
+  margin-top:7px;
+}
+.loadBar{
+  height:7px;
+  background:#22252b;
+  border-radius:20px;
+  margin-top:30px;
+  overflow:hidden;
+}
+#loadFill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,#ffd000,#ff7000);
+}
+#loadText{
+  color:#aaa;
+  font-size:13px;
+  margin-top:12px;
+}
+
+/* HUD */
+
+#hud{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  pointer-events:none;
+  color:white;
+}
+.topbar{
+  position:absolute;
+  top:max(12px,env(safe-area-inset-top));
+  left:12px;
+  right:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.money{
+  display:flex;
+  gap:7px;
+}
+.moneyBox{
+  min-width:92px;
+  padding:9px 12px;
+  border-radius:14px;
+  background:#090b0ed9;
+  border:1px solid #ffffff16;
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 30px #0008;
+  font-weight:900;
+  font-size:13px;
+}
+.moneyBox b{
+  color:#ffd000;
+}
+.moneyBox.diamond b{
+  color:#4edcff;
+}
+.pause{
+  width:45px;
+  height:45px;
+  border-radius:14px;
+  background:#080a0de8;
+  border:1px solid #ffffff18;
+  color:#fff;
+  font-size:20px;
+  pointer-events:auto;
+}
+#mission{
+  position:absolute;
+  top:72px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#080a0dd0;
+  border:1px solid #ffffff13;
+  padding:8px 15px;
+  border-radius:20px;
+  white-space:nowrap;
+  color:#ddd;
+  font-size:12px;
+}
+
+/* MAP */
+
+#miniMap{
+  position:absolute;
+  top:73px;
+  right:14px;
+  width:145px;
+  height:105px;
+  border-radius:15px;
+  background:#081009df;
+  border:1px solid #ffffff20;
+  overflow:hidden;
+  box-shadow:0 10px 30px #0009;
+}
+#mapCanvas{
+  width:100%;
+  height:100%;
+}
+
+/* SPEED */
+
+#speedometer{
+  --speed:0deg;
+  position:absolute;
+  right:17px;
+  bottom:18px;
+  width:140px;
+  height:140px;
+  border-radius:50%;
+  background:
+    conic-gradient(#ff0055 var(--speed),#25272c 0);
+  padding:8px;
+  box-shadow:0 0 35px #ff005544;
+}
+#speedometer:before{
+  content:"";
+  display:block;
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:#080a0d;
+}
+.speedInner{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+}
+#speedValue{
+  font-size:35px;
+  font-weight:1000;
+  color: #fff;
+}
+.kmh{
+  color:#888;
+  font-size:10px;
+}
+#gear{
+  color:#ff0055;
+  font-weight:900;
+  margin-top:4px;
+}
+
+/* NITRO */
+
+#nitro{
+  position:absolute;
+  left:50%;
+  bottom:28px;
+  transform:translateX(-50%);
+  width:170px;
+  height:53px;
+  border-radius:28px;
+  background:linear-gradient(180deg,#005277,#07131b);
+  color:#fff;
+  border:2px solid #00dfff;
+  font-weight:1000;
+  font-size:16px;
+  pointer-events:auto;
+  box-shadow:0 0 30px #00bfffaa;
+}
+#nitroBar{
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:7px;
+  height:6px;
+  border-radius:10px;
+  background:#14242b;
+  overflow:hidden;
+}
+#nitroFill{
+  height:100%;
+  width:100%;
+  background:linear-gradient(90deg,#00ffff,#ff0055);
+}
+
+/* CONTROLS */
+
+.control{
+  position:absolute;
+  width:67px;
+  height:67px;
+  border-radius:21px;
+  background:#090b0dd9;
+  border:1px solid #ffffff20;
+  color:white;
+  font-size:27px;
+  pointer-events:auto;
+  backdrop-filter:blur(10px);
+  box-shadow:0 8px 25px #000a;
+}
+.control:active,
+#nitro:active{
+  transform:scale(.92);
+  background:#ff0055;
+  color:#fff;
+}
+#left{
+  left:18px;
+  bottom:25px;
+}
+#right{
+  left:95px;
+  bottom:25px;
+}
+#gas{
+  right:22px;
+  bottom:103px;
+}
+#reverse{
+  right:22px;
+  bottom:25px;
+}
+#brake{
+  right:100px;
+  bottom:25px;
+  font-size:12px;
+}
+#cameraBtn{
+  left:18px;
+  top:85px;
+  width:48px;
+  height:48px;
+  font-size:18px;
+}
+#lockBtn{
+  left:18px;
+  top:141px;
+  width:48px;
+  height:48px;
+  font-size:17px;
+}
+
+/* SCREENS */
+
+.screen{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 50% 25%,#352800,#0b0d11 40%,#020305);
+  color:white;
+}
+.screen.active{
+  display:flex;
+}
+.panel{
+  width:min(900px,94vw);
+  max-height:90vh;
+  overflow:auto;
+  padding:25px;
+  border-radius:28px;
+  background:#080a0df2;
+  border:1px solid #ffffff16;
+  box-shadow:0 30px 100px #000;
+}
+.title{
+  font-size:33px;
+  font-weight:1000;
+}
+.subtitle{
+  color:#858991;
+  margin:7px 0 24px;
+}
+.menuGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.menuBtn{
+  min-height:65px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#ffd300,#ff8500);
+  color:#101010;
+  font-size:16px;
+  font-weight:1000;
+}
+.menuBtn.dark{
+  background:#15181d;
+  color:#fff;
+  border:1px solid #ffffff12;
+}
+.carGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+}
+.carCard{
+  background:#111419;
+  border:1px solid #ffffff12;
+  border-radius:22px;
+  padding:14px;
+  transition: .3s;
+}
+.carCard.selected{
+  border-color:#ff0055;
+  box-shadow:0 0 30px #ff005544;
+}
+.carImage{
+  height:125px;
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 50% 70%,#ff005533,transparent 52%),
+    linear-gradient(145deg,#23262c,#080a0d);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:65px;
+}
+.carName{
+  font-size:16px;
+  font-weight:1000;
+  margin-top:10px;
+}
+.stat{
+  color:#888;
+  font-size:11px;
+  line-height:1.9;
+  margin:7px 0;
+}
+.smallBtn{
+  width:100%;
+  min-height:45px;
+  border-radius:13px;
+  background:#ffd000;
+  color:#111;
+  font-weight:1000;
+}
+.upgrade{
+  margin:16px 0;
+}
+.upHead{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+}
+.upBar{
+  height:8px;
+  border-radius:10px;
+  background:#24272d;
+  margin-top:6px;
+  overflow:hidden;
+}
+.upBar span{
+  display:block;
+  height:100%;
+  background:linear-gradient(90deg,#ff0055,#ffd000);
+}
+.backBtn{
+  width:100%;
+  min-height:55px;
+  margin-top:15px;
+  border-radius:16px;
+  background:#16191e;
+  color:#fff;
+  border:1px solid #ffffff14;
+  font-weight:900;
+}
+
+/* LOCK */
+
+.locked #miniMap,
+.locked #mission,
+.locked .money,
+.locked .pause,
+.locked .control,
+.locked #speedometer,
+.locked #nitro{
+  opacity:0;
+  pointer-events:none;
+}
+.locked #lockBtn{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+  #miniMap{
+    width:110px;
+    height:82px;
+  }
+  #speedometer{
+    width:116px;
+    height:116px;
+    right:12px;
+    bottom:15px;
+  }
+  #speedValue{
+    font-size:29px;
+  }
+  #nitro{
+    width:145px;
+    height:48px;
+    bottom:22px;
+    font-size:13px;
+  }
+  .moneyBox{
+    min-width:auto;
+    padding:7px 9px;
+    font-size:11px;
+  }
+  .panel{
+    padding:20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game"></div>
+
+<div id="loading">
+  <div class="loadBox">
+    <div class="logo">
+      NEGM CITY
+      <small>ULTIMATE DRIVE</small>
+    </div>
+    <div class="loadBar">
+      <div id="loadFill"></div>
+    </div>
+    <div id="loadText">تشغيل محرك الخارق 3D...</div>
+  </div>
+</div>
+
+<div id="hud">
+
+  <div class="topbar">
+    <div class="money">
+      <div class="moneyBox">🪙 <b id="coins">2500</b></div>
+      <div class="moneyBox diamond">💎 <b id="diamonds">50</b></div>
+    </div>
+    <button class="pause" id="pauseBtn">Ⅱ</button>
+  </div>
+
+  <div id="mission">
+    🏁 اضغط على النيترو واستمتع بالسرعة الخارقة!
+  </div>
+
+  <div id="miniMap">
+    <canvas id="mapCanvas"></canvas>
+  </div>
+
+  <button class="control" id="cameraBtn">◉</button>
+  <button class="control" id="lockBtn">🔒</button>
+
+  <button class="control" id="left">‹</button>
+  <button class="control" id="right">›</button>
+  <button class="control" id="gas">▲</button>
+  <button class="control" id="reverse">▼</button>
+  <button class="control" id="brake">BRAKE</button>
+
+  <button id="nitro">
+    🔥 NITRO
+    <div id="nitroBar">
+      <div id="nitroFill"></div>
+    </div>
+  </button>
+
+  <div id="speedometer">
+    <div class="speedInner">
+      <div id="speedValue">0</div>
+      <div class="kmh">KM/H</div>
+      <div id="gear">N</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MAIN -->
+
+<div class="screen active" id="home">
+
+  <div class="panel">
+
+    <div class="title">NEGM CITY</div>
+
+    <div class="subtitle">
+      SUPER CARS • HIGH SPEED • STREET RACING
+    </div>
+
+    <div class="menuGrid">
+
+      <button class="menuBtn" id="startBtn">
+        🏎️ ابدأ انطلاق الوحوش
+      </button>
+
+      <button class="menuBtn dark" id="garageBtn">
+        🚘 الجراج والسيارات
+      </button>
+
+      <button class="menuBtn dark" id="upgradeBtn">
+        ⚙️ التزويد والترقيات
+      </button>
+
+      <button class="menuBtn dark" id="fullBtn">
+        ⛶ ملء الشاشة
+      </button>
+
+      <button class="menuBtn dark" id="landBtn">
+        📱 Landscape
+      </button>
+
+      <button class="menuBtn dark" id="resetBtn">
+        ♻️ إعادة اللعبة
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- GARAGE -->
+
+<div class="screen" id="garage">
+
+  <div class="panel">
+
+    <div class="title">SUPER GARAGE</div>
+    <div class="subtitle">اختر سيارتك الخارقة</div>
+
+    <div class="carGrid" id="carGrid"></div>
+
+    <button class="backBtn" onclick="openScreen('home')">
+      رجوع
+    </button>
+
+  </div>
+
+</div>
+
+<!-- UPGRADES -->
+
+<div class="screen" id="upgradesScreen">
+
+  <div class="panel">
+
+    <div class="title">PERFORMANCE TUNING</div>
+    <div class="subtitle">
+      زوّد محركك واجعل سيارتك صاروخاً في الشوارع
+    </div>
+
+    <div id="upgradeList"></div>
+
+    <button class="backBtn" onclick="openScreen('home')">
+      رجوع
+    </button>
+
+  </div>
+
+</div>
+
+<!-- PAUSE -->
+
+<div class="screen" id="pauseScreen">
+
+  <div class="panel" style="max-width:430px;text-align:center">
+
+    <div class="title">PAUSED</div>
+
+    <div class="subtitle">
+      اللعبة متوقفة مؤقتًا
+    </div>
+
+    <div class="menuGrid">
+
+      <button class="menuBtn" id="resumeBtn">
+        ▶ متابعة
+      </button>
+
+      <button class="menuBtn dark" id="homeBtn">
+        ⌂ الرئيسية
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { USDZLoader } from "three/addons/loaders/USDZLoader.js";
+
+/* =====================================================
+   CAR CONFIGURATIONS & SPEEDS (سيارات قوية جداً)
+===================================================== */
+
+const CAR_DATABASE = [
+  {
+    name: "Ford Mustang GT3",
+    file: "./models/mustang.usdz",
+    icon: "🏎️",
+    price: 0,
+    color: 0x1155ff,
+    maxSpeed: 65,        // سرعة قوية جداً
+    accel: 55,
+    handling: 1.2,
+    nitroPower: 60
+  },
+  {
+    name: "Ferrari 296 Challenge",
+    file: "./models/ferrari.usdz",
+    icon: "🏎️",
+    price: 8500,
+    color: 0xee1111,
+    maxSpeed: 82,        // سرعة خارقة
+    accel: 70,
+    handling: 1.5,
+    nitroPower: 80
+  },
+  {
+    name: "Ferrari 296 Speciale A",
+    file: "./models/ferrari_speciale.usdz",
+    icon: "🚀",
+    price: 15000,
+    color: 0xffa500,
+    maxSpeed: 105,       // صاروخ أرضي
+    accel: 90,
+    handling: 1.8,
+    nitroPower: 110
+  }
+];
+
+/* =====================================================
+   SAVE SYSTEM
+===================================================== */
+
+const SAVE_KEY="NEGM_CITY_SAVE_01";
+
+const defaultSave={
+  coins:2500,
+  diamonds:50,
+  selected:0,
+  upgrades:{
+    engine:1,
+    brakes:1,
+    speed:1,
+    nitro:1
+  }
+};
+
+let save;
+
+try{
+  save=JSON.parse(localStorage.getItem(SAVE_KEY))||defaultSave;
+}catch{
+  save=defaultSave;
+}
+
+function saveGame(){
+  localStorage.setItem(
+    SAVE_KEY,
+    JSON.stringify(save)
+  );
+}
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+let scene;
+let camera;
+let renderer;
+let clock;
+
+let player;
+let carModel;
+let nitroFlames = [];
+
+let traffic=[];
+let coins=[];
+let buildings=[];
+
+let running=false;
+let paused=false;
+
+let speed=0;
+let steer=0;
+let nitro=100;
+let isNitroActive = false;
+
+let cameraMode=0;
+
+const gltfLoader = new GLTFLoader();
+const usdzLoader = new USDZLoader();
+
+const input={
+  gas:false,
+  reverse:false,
+  left:false,
+  right:false,
+  brake:false
+};
+
+/* =====================================================
+   UI SYSTEM
+===================================================== */
+
+const $=id=>document.getElementById(id);
+
+function openScreen(id){
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+window.openScreen=openScreen;
+
+function updateMoney(){
+  $("coins").textContent=Math.floor(save.coins).toLocaleString();
+  $("diamonds").textContent=Math.floor(save.diamonds).toLocaleString();
+}
+
+updateMoney();
+
+/* =====================================================
+   THREE.JS INIT
+===================================================== */
+
+function init(){
+
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x7da4c4);
+  scene.fog=new THREE.FogExp2(0x7da4c4, .0012);
+
+  camera=new THREE.PerspectiveCamera(65, innerWidth/innerHeight, .1, 2500);
+  camera.position.set(0, 6, 12);
+
+  renderer=new THREE.WebGLRenderer({
+    antialias:true,
+    powerPreference:"high-performance"
+  });
+
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.2;
+
+  $("game").appendChild(renderer.domElement);
+
+  clock=new THREE.Clock();
+
+  lighting();
+  world();
+  createPlayer();
+  createTraffic();
+  createCoins();
+
+  addEvents();
+  animate();
+}
+
+/* =====================================================
+   LIGHTING
+===================================================== */
+
+function lighting(){
+  const hemi=new THREE.HemisphereLight(0xffffff, 0x334433, 2.0);
+  scene.add(hemi);
+
+  const sun=new THREE.DirectionalLight(0xffffff, 3.2);
+  sun.position.set(-200, 300, 160);
+  sun.castShadow=true;
+
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left=-500;
+  sun.shadow.camera.right=500;
+  sun.shadow.camera.top=500;
+  sun.shadow.camera.bottom=-500;
+
+  scene.add(sun);
+}
+
+/* =====================================================
+   WORLD CREATION
+===================================================== */
+
+function world(){
+  createGround();
+  createRoads();
+  createBuildings();
+  createTrees();
+  createLights();
+}
+
+function createGround(){
+  const ground=new THREE.Mesh(
+    new THREE.PlaneGeometry(1800, 1800),
+    new THREE.MeshStandardMaterial({ color:0x223820, roughness:1 })
+  );
+  ground.rotation.x=-Math.PI/2;
+  ground.receiveShadow=true;
+  scene.add(ground);
+}
+
+function road(x,z,w,l,rot=0){
+  const mesh=new THREE.Mesh(
+    new THREE.BoxGeometry(w, .08, l),
+    new THREE.MeshStandardMaterial({ color:0x17191c, roughness:.9 })
+  );
+  mesh.position.set(x, .04, z);
+  mesh.rotation.y=rot;
+  mesh.receiveShadow=true;
+  scene.add(mesh);
+}
+
+function createRoads(){
+  for(let p=-700; p<=700; p+=100){
+    road(p, 0, 30, 1500);
+    road(0, p, 30, 1500, Math.PI/2);
+  }
+}
+
+function createBuildings(){
+  const colors=[0x444850, 0x666d78, 0x3b424c, 0x555860];
+  for(let x=-650; x<=650; x+=100){
+    for(let z=-650; z<=650; z+=100){
+      if(Math.abs(x)<35 || Math.abs(z)<35) continue;
+
+      const h=30+Math.random()*120;
+      const b=new THREE.Mesh(
+        new THREE.BoxGeometry(35, h, 35),
+        new THREE.MeshStandardMaterial({
+          color: colors[Math.floor(Math.random()*colors.length)],
+          roughness:.6
+        })
+      );
+      b.position.set(x, h/2, z);
+      b.castShadow=true;
+      b.receiveShadow=true;
+      scene.add(b);
+
+      buildings.push({ mesh:b, radius:24 });
+    }
+  }
+}
+
+function createTrees(){
+  for(let i=0; i<200; i++){
+    const x=(Math.random()-.5)*1400;
+    const z=(Math.random()-.5)*1400;
+    if(Math.abs(x%100)<20 || Math.abs(z%100)<20) continue;
+
+    const tree = new THREE.Mesh(
+      new THREE.ConeGeometry(3, 8, 5),
+      new THREE.MeshStandardMaterial({color: 0x1b5e20})
+    );
+    tree.position.set(x, 4, z);
+    scene.add(tree);
+  }
+}
+
+function createLights(){
+  for(let p=-600; p<=600; p+=100){
+    const l1 = new THREE.PointLight(0xffaa22, 1, 20);
+    l1.position.set(16, 6, p);
+    scene.add(l1);
+  }
+}
+
+/* =====================================================
+   DYNAMIC CAR BUILDER (رياضية خارقة وقوية جدًا)
+===================================================== */
+
+function createProceduralSportsCar(colorHex){
+  const g = new THREE.Group();
+
+  const bodyMat = new THREE.MeshStandardMaterial({
+    color: colorHex,
+    metalness: 0.85,
+    roughness: 0.15
+  });
+
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: 0x05080c,
+    metalness: 0.9,
+    roughness: 0.05
+  });
+
+  const tireMat = new THREE.MeshStandardMaterial({
+    color: 0x111111,
+    roughness: 0.8
+  });
+
+  const rimMat = new THREE.MeshStandardMaterial({
+    color: 0xdddddd,
+    metalness: 0.9,
+    roughness: 0.1
+  });
+
+  // Base Chassis (Low & Wide)
+  const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.45, 5.2), bodyMat);
+  chassis.position.y = 0.55;
+  chassis.castShadow = true;
+  g.add(chassis);
+
+  // Cabin / Windshield
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.55, 2.2), glassMat);
+  cabin.position.set(0, 0.95, -0.2);
+  cabin.castShadow = true;
+  g.add(cabin);
+
+  // Aggressive Rear Spoiler / Wing
+  const wingBase1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.3), bodyMat);
+  wingBase1.position.set(-0.9, 1.0, 2.2);
+  g.add(wingBase1);
+
+  const wingBase2 = wingBase1.clone();
+  wingBase2.position.x = 0.9;
+  g.add(wingBase2);
+
+  const spoiler = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.08, 0.6), bodyMat);
+  spoiler.position.set(0, 1.2, 2.25);
+  g.add(spoiler);
+
+  // Neon Underglow
+  const neon = new THREE.PointLight(colorHex, 2.5, 8);
+  neon.position.set(0, 0.2, 0);
+  g.add(neon);
+
+  // Wheels
+  const wheels = [];
+  for(const x of [-1.25, 1.25]){
+    for(const z of [-1.6, 1.6]){
+      const wGroup = new THREE.Group();
+      
+      const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.4, 24), tireMat);
+      tire.rotation.z = Math.PI / 2;
+      wGroup.add(tire);
+
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.42, 12), rimMat);
+      rim.rotation.z = Math.PI / 2;
+      wGroup.add(rim);
+
+      wGroup.position.set(x, 0.5, z);
+      g.add(wGroup);
+      wheels.push(wGroup);
+    }
+  }
+
+  // Exhaust Flames (Nitro Emitters)
+  nitroFlames = [];
+  for(const x of [-0.5, 0.5]){
+    const flame = new THREE.Mesh(
+      new THREE.ConeGeometry(0.2, 0.9, 12),
+      new THREE.MeshBasicMaterial({ color: 0x00dfff, transparent: true, opacity: 0.9 })
+    );
+    flame.rotation.x = -Math.PI / 2;
+    flame.position.set(x, 0.55, 2.7);
+    flame.visible = false;
+    g.add(flame);
+    nitroFlames.push(flame);
+  }
+
+  g.userData.wheels = wheels;
+  return g;
+}
+
+/* =====================================================
+   PLAYER CAR CREATION & USDZ / GLTF LOADING
+===================================================== */
+
+function createPlayer(){
+  player = new THREE.Group();
+  player.position.set(0, 0.4, 0);
+  scene.add(player);
+
+  loadSelectedCarModel();
+}
+
+function loadSelectedCarModel(){
+  if(carModel) player.remove(carModel);
+
+  const carInfo = CAR_DATABASE[save.selected] || CAR_DATABASE[0];
+
+  // محاولة تحميل المجسم الخارجي
+  if(carInfo.file.endsWith(".usdz")){
+    usdzLoader.load(
+      carInfo.file,
+      (usdz) => {
+        carModel = usdz;
+        carModel.scale.set(0.01, 0.01, 0.01); // ضبط حجم الفيراري والموستانج
+        carModel.position.set(0, 0, 0);
+        player.add(carModel);
+      },
+      undefined,
+      () => {
+        // Fallback في حال عدم وجود الملف المحلي
+        carModel = createProceduralSportsCar(carInfo.color);
+        player.add(carModel);
+      }
+    );
+  } else {
+    carModel = createProceduralSportsCar(carInfo.color);
+    player.add(carModel);
+  }
+}
+
+/* =====================================================
+   TRAFFIC & COINS
+===================================================== */
+
+function createTraffic(){
+  for(let i=0; i<25; i++){
+    const c = createProceduralSportsCar(Math.random()*0xffffff);
+    const horiz = Math.random() > 0.5;
+    c.position.set(
+      horiz ? (Math.random()-.5)*1200 : (Math.random()>.5?15:-15),
+      0.4,
+      horiz ? (Math.random()>.5?15:-15) : (Math.random()-.5)*1200
+    );
+    c.userData = { horiz, dir: Math.random()>.5?1:-1, speed: 15+Math.random()*20 };
+    scene.add(c);
+    traffic.push(c);
+  }
+}
+
+function createCoins(){
+  for(let i=0; i<120; i++){
+    const coin = new THREE.Mesh(
+      new THREE.TorusGeometry(0.6, 0.15, 8, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffd000, metalness: 0.9 })
+    );
+    coin.position.set((Math.random()-.5)*1200, 1.2, (Math.random()-.5)*1200);
+    coin.rotation.x = Math.PI / 2;
+    scene.add(coin);
+    coins.push(coin);
+  }
+}
+
+/* =====================================================
+   CONTROLS & INPUT
+===================================================== */
+
+function hold(id,key){
+  const el=$(id);
+  const down=e=>{ e.preventDefault(); input[key]=true; };
+  const up=e=>{ e.preventDefault(); input[key]=false; };
+  el.addEventListener("pointerdown", down);
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("pointerleave", up);
+}
+
+hold("gas","gas");
+hold("reverse","reverse");
+hold("left","left");
+hold("right","right");
+hold("brake","brake");
+
+window.addEventListener("keydown", e=>{
+  if(e.code==="KeyW"||e.code==="ArrowUp") input.gas=true;
+  if(e.code==="KeyS"||e.code==="ArrowDown") input.reverse=true;
+  if(e.code==="KeyA"||e.code==="ArrowLeft") input.left=true;
+  if(e.code==="KeyD"||e.code==="ArrowRight") input.right=true;
+  if(e.code==="Space") input.brake=true;
+  if(e.code==="ShiftLeft"||e.code==="ShiftRight") nitroBoost();
+});
+
+window.addEventListener("keyup", e=>{
+  if(e.code==="KeyW"||e.code==="ArrowUp") input.gas=false;
+  if(e.code==="KeyS"||e.code==="ArrowDown") input.reverse=false;
+  if(e.code==="KeyA"||e.code==="ArrowLeft") input.left=false;
+  if(e.code==="KeyD"||e.code==="ArrowRight") input.right=false;
+  if(e.code==="Space") input.brake=false;
+});
+
+/* =====================================================
+   SUPER PHYSICS & DRIVING SYSTEM
+===================================================== */
+
+function updatePlayer(dt){
+  if(!running||paused) return;
+
+  const currentCar = CAR_DATABASE[save.selected] || CAR_DATABASE[0];
+  const engineLvl = save.upgrades.engine;
+  const speedLvl = save.upgrades.speed;
+
+  // قوة وسرعة السيارة الخارقة
+  const maxSpeed = currentCar.maxSpeed + (speedLvl * 8) + (engineLvl * 5);
+  const accelPower = currentCar.accel + (engineLvl * 6);
+
+  if(input.gas){
+    speed += accelPower * dt;
+  }
+  if(input.reverse){
+    speed -= 30 * dt;
+  }
+  if(input.brake){
+    speed -= (60 + save.upgrades.brakes * 10) * dt;
+  }
+
+  if(!input.gas && !input.reverse){
+    speed *= Math.pow(0.96, dt * 60);
+  }
+
+  speed = THREE.MathUtils.clamp(speed, -20, maxSpeed);
+
+  // الانعطاف الرياضي السريع
+  if(input.left){
+    steer = THREE.MathUtils.lerp(steer, -1, dt * 10);
+  } else if(input.right){
+    steer = THREE.MathUtils.lerp(steer, 1, dt * 10);
+  } else {
+    steer = THREE.MathUtils.lerp(steer, 0, dt * 12);
+  }
+
+  const turnFactor = currentCar.handling * (0.8 + Math.min(Math.abs(speed)/30, 1.2));
+  player.rotation.y -= steer * speed * turnFactor * dt * 0.025;
+
+  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(player.quaternion);
+  player.position.addScaledVector(forward, speed * dt);
+
+  // تأثير نيران النيترو عند السرعة
+  if(isNitroActive){
+    nitroFlames.forEach(f => {
+      f.visible = true;
+      f.scale.set(1 + Math.random()*0.5, 1 + Math.random()*0.8, 1);
+    });
+  } else {
+    nitroFlames.forEach(f => f.visible = false);
+  }
+
+  collideBuildings();
+  collectCoins();
+  updateCamera(dt);
+  updateHUD();
+}
+
+/* =====================================================
+   NITRO BOOST (سرعة صاروخية)
+===================================================== */
+
+function nitroBoost(){
+  if(nitro <= 5 || !running || paused) return;
+
+  const currentCar = CAR_DATABASE[save.selected] || CAR_DATABASE[0];
+  speed += currentCar.nitroPower + (save.upgrades.nitro * 10);
+  nitro -= 25;
+  nitro = Math.max(0, nitro);
+
+  isNitroActive = true;
+  setTimeout(() => { isNitroActive = false; }, 800);
+}
+
+$("nitro").addEventListener("pointerdown", e => {
+  e.preventDefault();
+  nitroBoost();
+});
+
+/* =====================================================
+   COLLISIONS & COINS
+===================================================== */
+
+function collideBuildings(){
+  for(const b of buildings){
+    const dist = player.position.distanceTo(b.mesh.position);
+    if(dist < b.radius){
+      speed *= -0.3; // ارتداد عند الاصطدام
+    }
+  }
+}
+
+function collectCoins(){
+  for(let i=coins.length-1; i>=0; i--){
+    if(coins[i].position.distanceTo(player.position) < 4){
+      scene.remove(coins[i]);
+      coins.splice(i, 1);
+      save.coins += 50;
+      updateMoney();
+      saveGame();
+    }
+  }
+}
+
+/* =====================================================
+   CAMERA SYSTEM (مع زاوية سرعة متغيرة Dynamic FOV)
+===================================================== */
+
+function updateCamera(dt){
+  const offset = cameraMode === 0 
+    ? new THREE.Vector3(0, 5.5, 11) 
+    : new THREE.Vector3(0, 9, 17);
+
+  offset.applyQuaternion(player.quaternion);
+  const targetPos = player.position.clone().add(offset);
+
+  camera.position.lerp(targetPos, 1 - Math.pow(0.001, dt));
+  camera.lookAt(player.position.clone().add(new THREE.Vector3(0, 1, 0)));
+
+  // تكبير زاوية الرؤية عند السرعة الفائقة لزيادة الحماس
+  camera.fov = THREE.MathUtils.lerp(camera.fov, 65 + (speed * 0.3), dt * 4);
+  camera.updateProjectionMatrix();
+}
+
+/* =====================================================
+   HUD & SPEEDOMETER
+===================================================== */
+
+function updateHUD(){
+  const kmh = Math.max(0, speed * 3.8);
+  $("speedValue").textContent = Math.floor(kmh);
+
+  let gear = "N";
+  if(kmh > 1) gear = Math.min(8, Math.floor(kmh/35)+1);
+  if(speed < -0.5) gear = "R";
+  $("gear").textContent = gear;
+
+  const deg = Math.min(360, (kmh / 320) * 360);
+  $("speedometer").style.setProperty("--speed", deg + "deg");
+  $("nitroFill").style.width = nitro + "%";
+
+  // تعبئة النيترو تلقائياً وببطء
+  if(nitro < 100) nitro += 0.08;
+}
+
+/* =====================================================
+   MINIMAP
+===================================================== */
+
+function drawMap(){
+  const canvas=$("mapCanvas");
+  const ctx=canvas.getContext("2d");
+  const w=canvas.width=canvas.clientWidth*2;
+  const h=canvas.height=canvas.clientHeight*2;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="#071008";
+  ctx.fillRect(0,0,w,h);
+
+  if(player){
+    ctx.fillStyle="#ff0055";
+    ctx.beginPath();
+    ctx.arc(w/2 + player.position.x*0.08, h/2 + player.position.z*0.08, 6, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+/* =====================================================
+   GAME LOOP
+===================================================== */
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  if(!paused){
+    updatePlayer(dt);
+    drawMap();
+  }
+
+  renderer.render(scene, camera);
+}
+
+/* =====================================================
+   GARAGE & UPGRADES RENDER
+===================================================== */
+
+function renderGarage(){
+  const grid=$("carGrid");
+  grid.innerHTML="";
+
+  CAR_DATABASE.forEach((car, index) => {
+    const card=document.createElement("div");
+    card.className="carCard "+(save.selected===index ? "selected":"");
+    card.innerHTML=`
+      <div class="carImage">${car.icon}</div>
+      <div class="carName">${car.name}</div>
+      <div class="stat">
+        TOP SPEED: ${car.maxSpeed * 3} KM/H<br>
+        ACCELERATION: ★★★★★<br>
+        HANDLING: SPORT PRO
+      </div>
+      <button class="smallBtn">
+        ${index===0 || save.selected===index ? "اختيار السيارة" : "🪙 "+car.price.toLocaleString()}
+      </button>
+    `;
+
+    card.querySelector("button").onclick=()=>{
+      if(index>0 && save.selected!==index && save.coins < car.price){
+        alert("العملات غير كافية لارتقاء هذه السيارة!");
+        return;
+      }
+      if(index>0 && save.selected!==index){
+        save.coins -= car.price;
+      }
+      save.selected = index;
+      saveGame();
+      updateMoney();
+      renderGarage();
+      loadSelectedCarModel();
+    };
+
+    grid.appendChild(card);
+  });
+}
+
+function renderUpgrades(){
+  const list=$("upgradeList");
+  list.innerHTML="";
+
+  const data=[
+    ["engine","SUPER ENGINE","زيادة تسارع المحرك"],
+    ["brakes","RACING BRAKES","فرامل رياضية فورية"],
+    ["speed","TOP SPEED","زيادة السرعة القصوى"],
+    ["nitro","NITRO BOOST","مضاعفة قوة الصاروخ"]
+  ];
+
+  data.forEach(([key,title,desc])=>{
+    const level=save.upgrades[key];
+    const cost=level*600;
+
+    const box=document.createElement("div");
+    box.className="upgrade";
+    box.innerHTML=`
+      <div class="upHead">
+        <b>${title}</b>
+        <span>LEVEL ${level}/10</span>
+      </div>
+      <div style="color:#777;font-size:11px;margin-top:4px">${desc}</div>
+      <div class="upBar"><span style="width:${level*10}%"></span></div>
+      <button class="smallBtn" style="margin-top:8px">تزويد — 🪙 ${cost}</button>
+    `;
+
+    box.querySelector("button").onclick=()=>{
+      if(level>=10){ alert("أقصى مستوى!"); return; }
+      if(save.coins<cost){ alert("العملات غير كافية!"); return; }
+
+      save.coins -= cost;
+      save.upgrades[key]++;
+      saveGame();
+      updateMoney();
+      renderUpgrades();
+    };
+
+    list.appendChild(box);
+  });
+}
+
+/* =====================================================
+   BUTTON EVENTS & START
+===================================================== */
+
+$("startBtn").onclick=()=>{
+  running=true;
+  paused=false;
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+};
+
+$("garageBtn").onclick=()=>{ renderGarage(); openScreen("garage"); };
+$("upgradeBtn").onclick=()=>{ renderUpgrades(); openScreen("upgradesScreen"); };
+
+$("pauseBtn").onclick=()=>{ if(!running)return; paused=true; openScreen("pauseScreen"); };
+$("resumeBtn").onclick=()=>{ paused=false; document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active")); };
+$("homeBtn").onclick=()=>{ running=false; paused=false; openScreen("home"); };
+
+$("cameraBtn").onclick=()=>{ cameraMode = cameraMode === 0 ? 1 : 0; };
+$("lockBtn").onclick=()=>{ document.body.classList.toggle("locked"); };
+
+$("fullBtn").onclick=async()=>{
+  if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+  else await document.exitFullscreen();
+};
+
+$("resetBtn").onclick=()=>{
+  if(confirm("هل تريد إعادة ضبط التقدم والسيارات؟")){
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  }
+};
+
+window.addEventListener("resize", ()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+function addEvents(){
+  $("cameraBtn").addEventListener("pointerdown", e=>e.preventDefault());
+  $("lockBtn").addEventListener("pointerdown", e=>e.preventDefault());
+}
+
+/* =====================================================
+   BOOT GAME
+===================================================== */
+
+async function boot(){
+  const fill=$("loadFill");
+  const text=$("loadText");
+
+  fill.style.width="30%";
+  text.textContent="تحميل محرك الوحوش السريعة...";
+  await new Promise(r=>setTimeout(r, 200));
+
+  fill.style.width="70%";
+  text.textContent="تجهيز السيارات والمضمار...";
+  await new Promise(r=>setTimeout(r, 200));
+
+  init();
+
+  fill.style.width="100%";
+  text.textContent="جاهز للانطلاق بأقصى سرعة 🔥";
+  await new Promise(r=>setTimeout(r, 300));
+
+  $("loading").style.opacity="0";
+  setTimeout(()=>{$("loading").style.display="none";}, 500);
+}
+
+boot();
+
+</script>
+
+</body>
+</html>
